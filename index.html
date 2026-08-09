@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>วิชาวิทยาการคำนวณ ป.4 - โรงเรียนอนุบาลวัดนางนอง</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: 'Prompt', sans-serif; background-color: #F0F9FF; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800">
+
+  <!-- Header -->
+  <header class="bg-sky-500 text-white p-4 shadow-lg border-b-4 border-sky-700">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <span class="text-3xl">⚔️</span>
+        <div>
+          <h1 class="text-xl font-bold leading-tight">ระบบติดตามงานวิทยาการคำนวณ ป.4</h1>
+          <p class="text-xs text-sky-100">โรงเรียนอนุบาลวัดนางนอง | ครูฝนฝน</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-4 md:p-6">
+    <!-- Role Selector -->
+    <div id="roleSelector" class="grid grid-cols-1 md:grid-cols-2 gap-6 my-10">
+      <div onclick="switchRole('student')" class="bg-white p-8 rounded-2xl border-4 border-sky-400 text-center cursor-pointer hover:scale-105 transition shadow-lg">
+        <div class="text-6xl mb-4">🎒</div>
+        <h2 class="text-2xl font-bold text-sky-600 mb-2">สำหรับนักเรียน</h2>
+        <p class="text-slate-500">เข้าสู่ระบบด้วยรหัสนักเรียน ดูงานและฮีโร่ของคุณ</p>
+      </div>
+      <div onclick="switchRole('teacher')" class="bg-white p-8 rounded-2xl border-4 border-pink-400 text-center cursor-pointer hover:scale-105 transition shadow-lg">
+        <div class="text-6xl mb-4">👩‍🏫</div>
+        <h2 class="text-2xl font-bold text-pink-600 mb-2">สำหรับคุณครู</h2>
+        <p class="text-slate-500">จัดการภาระงาน กรอกคะแนน และดาวน์โหลดไฟล์ Excel</p>
+      </div>
+    </div>
+
+    <!-- Student Section -->
+    <section id="studentSection" class="hidden">
+      <div id="studentLogin" class="max-w-md mx-auto bg-white p-6 rounded-2xl border-4 border-sky-400 shadow-lg my-10">
+        <h3 class="text-xl font-bold text-center mb-4 text-sky-600">🔐 เข้าสู่ระบบนักเรียน</h3>
+        <input type="text" id="inputStudentId" placeholder="กรอกรหัสนักเรียน (เช่น 40101)" class="w-full p-3 border-2 border-sky-300 rounded-lg text-center text-lg mb-4 focus:outline-none focus:border-sky-500">
+        <button onclick="loginStudent()" class="w-full bg-amber-400 hover:bg-amber-500 text-slate-800 font-bold py-3 text-lg rounded-xl shadow-md border-2 border-amber-600">เข้าสู่ระบบ 🚀</button>
+      </div>
+
+      <div id="studentView" class="hidden space-y-6">
+        <div id="heroBanner" class="bg-gradient-to-r from-amber-100 to-orange-100 p-6 rounded-2xl border-4 border-amber-400 shadow-md"></div>
+        <div class="bg-white p-6 rounded-2xl border-4 border-sky-400 shadow-md">
+          <h3 class="text-lg font-bold mb-4 text-sky-700"><i class="fa-solid fa-list-check mr-2"></i> รายการภาระงานของคุณ</h3>
+          <div id="studentTaskList" class="space-y-4"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Teacher Section -->
+    <section id="teacherSection" class="hidden space-y-6">
+      <div class="bg-white p-4 rounded-2xl border-4 border-sky-400 shadow-md flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center space-x-2">
+          <label class="font-bold">เลือกระดับชั้น:</label>
+          <select id="classSelect" onchange="renderTeacherTable()" class="p-2 border-2 border-sky-300 rounded-lg font-bold text-sky-700">
+            <option value="ป.4/1">ป.4/1</option>
+            <option value="ป.4/2">ป.4/2</option>
+            <option value="ป.4/3">ป.4/3</option>
+            <option value="ป.4/4">ป.4/4</option>
+          </select>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl shadow border-2 border-emerald-800">📊 ดาวน์โหลดคะแนน (.xlsx)</button>
+          <button onclick="saveAllScores()" class="bg-sky-500 hover:bg-sky-600 text-white font-bold px-5 py-2 rounded-xl shadow border-2 border-sky-700">💾 บันทึกคะแนนทั้งหมด</button>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl border-4 border-sky-400 shadow-md overflow-x-auto">
+        <table id="teacherTable" class="w-full text-left border-collapse">
+          <thead>
+            <tr id="tableHeader" class="bg-sky-100 text-sky-800 border-b-2 border-sky-300">
+              <th class="p-3">เลขที่</th>
+              <th class="p-3">เลขประจำตัว</th>
+              <th class="p-3">ชื่อ-นามสกุล</th>
+              <th class="p-3 text-center">ความก้าวหน้า</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ⚠️ วาง URL Web App จาก Google Apps Script ตรงนี้ครับ
+    const GAS_WEB_APP_URL = "https://script.google.com/a/macros/awnn.ac.th/s/AKfycbwS7zxpDJPnJLGPBcyuoCUDypYL0MMLS6oK_p-canbjVzKKK5ORIlhEcuYnZ0ERwoex_Q/exec";
+
+    let globalData = { students: [], assignments: [], scores: [], targetScore: 20 };
+    let currentStudent = null;
+    let pendingScoreUpdates = {};
+
+    window.onload = function() { fetchData(); };
+
+    async function callGAS(action, payload = {}) {
+      try {
+        const res = await fetch(GAS_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: action, ...payload })
+        });
+        return await res.json();
+      } catch (err) {
+        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+      }
+    }
+
+    async function fetchData() {
+      Swal.fire({ title: 'กำลังดึงข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      globalData = await callGAS('getInitialData');
+      Swal.close();
+      if (currentStudent) renderStudentDashboard();
+      renderTeacherTable();
+    }
+
+    function switchRole(role) {
+      document.getElementById('roleSelector').classList.add('hidden');
+      if (role === 'student') {
+        document.getElementById('studentSection').classList.remove('hidden');
+      } else {
+        Swal.fire({
+          title: 'ยืนยันตัวตนคุณครู',
+          input: 'text',
+          inputPlaceholder: 'กรอกชื่อผู้ใช้',
+          showCancelButton: true,
+          confirmButtonText: 'เข้าสู่ระบบ'
+        }).then((result) => {
+          if (result.value === '@dmin') {
+            document.getElementById('teacherSection').classList.remove('hidden');
+            renderTeacherTable();
+          } else if (result.isConfirmed) {
+            Swal.fire('ชื่อผู้ใช้ไม่ถูกต้อง', '', 'error').then(() => switchRole('teacher'));
+          } else {
+            document.getElementById('roleSelector').classList.remove('hidden');
+          }
+        });
+      }
+    }
+
+    function loginStudent() {
+      const id = document.getElementById('inputStudentId').value.trim();
+      const student = globalData.students.find(s => s.StudentID == id);
+      if (!student) {
+        Swal.fire('ไม่พบข้อมูล', 'กรุณาตรวจสอบรหัสนักเรียนอีกครั้ง', 'error');
+        return;
+      }
+      currentStudent = student;
+      document.getElementById('studentLogin').classList.add('hidden');
+      document.getElementById('studentView').classList.remove('hidden');
+      renderStudentDashboard();
+    }
+
+    function renderStudentDashboard() {
+      const heroBanner = document.getElementById('heroBanner');
+      if (!currentStudent.HeroType) {
+        heroBanner.innerHTML = `
+          <div class="text-center py-4">
+            <h3 class="text-xl font-bold text-amber-800">✨ เลือกฮีโร่ประจำตัวของคุณ</h3>
+            <div class="flex justify-center space-x-4 my-4">
+              <button onclick="chooseHero('⚔️ อัศวิน')" class="bg-white p-3 rounded-xl border-2 border-amber-400 font-bold">⚔️ อัศวิน</button>
+              <button onclick="chooseHero('🧙‍♂️ พ่อมด')" class="bg-white p-3 rounded-xl border-2 border-amber-400 font-bold">🧙‍♂️ พ่อมด</button>
+              <button onclick="chooseHero('🦊 จิ้งจอก')" class="bg-white p-3 rounded-xl border-2 border-amber-400 font-bold">🦊 จิ้งจอก</button>
+            </div>
+          </div>`;
+      } else {
+        heroBanner.innerHTML = `
+          <div class="flex justify-between items-center">
+            <div>
+              <span class="text-xs bg-amber-200 text-amber-800 px-2 py-1 rounded-full font-bold">${currentStudent.Class} เลขที่ ${currentStudent.Number}</span>
+              <h2 class="text-2xl font-bold text-amber-900 mt-1">${currentStudent.Name}</h2>
+              <p class="text-amber-700 text-sm">ฮีโร่: <b>${currentStudent.HeroType}</b></p>
+            </div>
+            <div class="text-right">
+              <div class="text-3xl font-bold text-orange-600">⚡ ${currentStudent.EnergyPoints || 0}</div>
+              <div class="text-xs text-amber-700">พลังสะสม</div>
+            </div>
+          </div>`;
+      }
+
+      const taskList = document.getElementById('studentTaskList');
+      taskList.innerHTML = '';
+      globalData.assignments.forEach(assign => {
+        const scoreRec = globalData.scores.find(s => s.StudentID == currentStudent.StudentID && s.AssignmentID == assign.AssignmentID);
+        const isSubmitted = scoreRec && scoreRec.Status === 'ส่งแล้ว';
+        taskList.innerHTML += `
+          <div class="flex justify-between items-center p-4 bg-slate-50 border rounded-xl">
+            <div>
+              <h4 class="font-bold text-slate-800">${assign.Title}</h4>
+              ${assign.FileUrl ? `<a href="${assign.FileUrl}" target="_blank" class="text-xs text-sky-600 underline font-bold">📎 แนบไฟล์งาน/ลิงก์</a>` : ''}
+            </div>
+            <div>
+              ${isSubmitted ? `<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">ส่งแล้ว ✅</span>` : `<span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-bold">ยังไม่ส่ง ❌</span>`}
+            </div>
+          </div>`;
+      });
+    }
+
+    async function chooseHero(heroType) {
+      Swal.fire({ title: 'กำลังเลือกฮีโร่...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      globalData = await callGAS('selectHero', { studentId: currentStudent.StudentID, heroType: heroType });
+      currentStudent = globalData.students.find(s => s.StudentID == currentStudent.StudentID);
+      Swal.close();
+      renderStudentDashboard();
+    }
+
+    function renderTeacherTable() {
+      const selectedClass = document.getElementById('classSelect').value;
+      const classStudents = globalData.students.filter(s => s.Class === selectedClass);
+      const headerRow = document.getElementById('tableHeader');
+      const tableBody = document.getElementById('tableBody');
+
+      headerRow.innerHTML = `<th class="p-3 border-b">เลขที่</th><th class="p-3 border-b">เลขประจำตัว</th><th class="p-3 border-b">ชื่อ-นามสกุล</th><th class="p-3 border-b text-center">ความก้าวหน้า</th>`;
+      globalData.assignments.forEach(assign => {
+        headerRow.innerHTML += `<th class="p-3 border-b text-center"><div class="font-bold">${assign.Title}</div><div class="text-xs text-slate-400">(เต็ม ${assign.MaxScore})</div></th>`;
+      });
+
+      tableBody.innerHTML = '';
+      classStudents.forEach(stu => {
+        let submittedCount = 0;
+        let scoreInputsHtml = '';
+        globalData.assignments.forEach(assign => {
+          const scoreRec = globalData.scores.find(s => s.StudentID == stu.StudentID && s.AssignmentID == assign.AssignmentID);
+          const val = scoreRec ? scoreRec.Score : '';
+          if (val !== '') submittedCount++;
+          scoreInputsHtml += `
+            <td class="p-2 border-b text-center">
+              <input type="number" value="${val}" onchange="onScoreChange('${stu.StudentID}', '${assign.AssignmentID}', this.value)" class="w-16 p-1 text-center border-2 border-slate-200 rounded font-bold">
+            </td>`;
+        });
+
+        const totalAssign = globalData.assignments.length || 1;
+        const pct = Math.round((submittedCount / totalAssign) * 100);
+        tableBody.innerHTML += `
+          <tr class="hover:bg-sky-50 border-b">
+            <td class="p-3 font-bold">${stu.Number || '-'}</td>
+            <td class="p-3 font-mono text-sm">${stu.StudentID}</td>
+            <td class="p-3 font-bold">${stu.Name}</td>
+            <td class="p-3 text-center"><span class="text-xs font-bold text-sky-700">${submittedCount}/${totalAssign} งาน (${pct}%)</span></td>
+            ${scoreInputsHtml}
+          </tr>`;
+      });
+    }
+
+    function onScoreChange(studentId, assignmentId, newScore) {
+      pendingScoreUpdates[`${studentId}_${assignmentId}`] = { studentId: studentId, assignmentId: assignmentId, score: newScore };
+    }
+
+    async function saveAllScores() {
+      const updates = Object.values(pendingScoreUpdates);
+      if (updates.length === 0) { Swal.fire('ไม่มีการเปลี่ยนแปลง', '', 'info'); return; }
+      Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      globalData = await callGAS('saveBatchScores', { data: updates });
+      pendingScoreUpdates = {};
+      renderTeacherTable();
+      Swal.fire('บันทึกสำเร็จ!', '', 'success');
+    }
+
+    function exportToExcel() {
+      const selectedClass = document.getElementById('classSelect').value;
+      const classStudents = globalData.students.filter(s => s.Class === selectedClass);
+      const dataToExport = classStudents.map(stu => {
+        let row = { 'เลขที่': stu.Number, 'เลขประจำตัว': stu.StudentID, 'ชื่อ-นามสกุล': stu.Name };
+        globalData.assignments.forEach(assign => {
+          const scoreRec = globalData.scores.find(s => s.StudentID == stu.StudentID && s.AssignmentID == assign.AssignmentID);
+          row[assign.Title] = scoreRec ? scoreRec.Score : '-';
+        });
+        return row;
+      });
+      const ws = XLSX.utils.json_to_sheet(dataToExport);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "คะแนน");
+      XLSX.writeFile(wb, `คะแนน_${selectedClass}.xlsx`);
+    }
+  </script>
+</body>
+</html>
