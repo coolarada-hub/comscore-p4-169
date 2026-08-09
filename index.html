@@ -2,159 +2,560 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>วิชาวิทยาการคำนวณ ป.4 - โรงเรียนอนุบาลวัดนางนอง</title>
+  <!-- Tailwind CSS & FontAwesome & SweetAlert2 & Canvas Confetti & SheetJS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <style>
     body { font-family: 'Prompt', sans-serif; background-color: #F0F9FF; }
+    
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #e0f2fe 25%, #bae6fd 50%, #e0f2fe 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    
+    .card-game {
+      background: white;
+      border: 3px solid #38BDF8;
+      box-shadow: 0px 8px 0px #0284C7;
+      border-radius: 1.25rem;
+    }
+    .card-game-pink {
+      background: white;
+      border: 3px solid #F472B6;
+      box-shadow: 0px 8px 0px #DB2777;
+      border-radius: 1.25rem;
+    }
+    .btn-game-yellow {
+      background: #FACC15;
+      border: 2px solid #CA8A04;
+      box-shadow: 0px 4px 0px #A16207;
+      border-radius: 0.75rem;
+      font-weight: bold;
+      transition: all 0.1s ease;
+    }
+    .btn-game-yellow:active {
+      transform: translateY(2px);
+      box-shadow: 0px 2px 0px #A16207;
+    }
   </style>
 </head>
-<body class="min-h-screen text-slate-800">
+<body class="min-h-screen text-slate-800 flex flex-col justify-between">
 
-  <!-- Header -->
-  <header class="bg-sky-500 text-white p-4 shadow-lg border-b-4 border-sky-700">
-    <div class="max-w-6xl mx-auto flex justify-between items-center">
-      <div class="flex items-center space-x-3">
-        <span class="text-3xl">⚔️</span>
-        <div>
-          <h1 class="text-xl font-bold leading-tight">ระบบติดตามงานวิทยาการคำนวณ ป.4</h1>
-          <p class="text-xs text-sky-100">โรงเรียนอนุบาลวัดนางนอง | ครูฝนฝน</p>
+  <div>
+    <!-- Header / Navbar -->
+    <header class="bg-sky-500 text-white p-4 shadow-lg border-b-4 border-sky-700 sticky top-0 z-40">
+      <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-2">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+          <span class="text-3xl">⚔️</span>
+          <div>
+            <h1 class="text-xl font-bold leading-tight">วิชาวิทยาการคำนวณ ป.4</h1>
+            <p class="text-xs text-sky-100">โรงเรียนอนุบาลวัดนางนอง | ครูฝนฝน (อารดา รัตนนภาลัย)</p>
+          </div>
         </div>
+        
+        <!-- Navigation Menu -->
+        <nav class="flex items-center space-x-1 md:space-x-2 text-sm font-bold">
+          <button onclick="switchTab('home')" id="navHome" class="px-3 py-1.5 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition">
+            <i class="fa-solid fa-house mr-1"></i> หน้าหลัก
+          </button>
+          <button onclick="switchTab('teacher')" id="navTeacher" class="px-3 py-1.5 rounded-lg text-sky-100 hover:bg-sky-600 hover:text-white transition">
+            <i class="fa-solid fa-chalkboard-user mr-1"></i> คุณครู
+          </button>
+          <button onclick="switchTab('student')" id="navStudent" class="px-3 py-1.5 rounded-lg text-sky-100 hover:bg-sky-600 hover:text-white transition">
+            <i class="fa-solid fa-graduation-cap mr-1"></i> นักเรียน
+          </button>
+          <button onclick="switchTab('arena')" id="navArena" class="px-3 py-1.5 rounded-lg text-amber-300 hover:bg-sky-600 hover:text-amber-200 transition">
+            <i class="fa-solid fa-shield-halved mr-1"></i> ลานประลอง Arena
+          </button>
+        </nav>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main class="max-w-6xl mx-auto p-4 md:p-6">
-    <!-- Role Selector -->
-    <div id="roleSelector" class="grid grid-cols-1 md:grid-cols-2 gap-6 my-10">
-      <div onclick="switchRole('student')" class="bg-white p-8 rounded-2xl border-4 border-sky-400 text-center cursor-pointer hover:scale-105 transition shadow-lg">
-        <div class="text-6xl mb-4">🎒</div>
-        <h2 class="text-2xl font-bold text-sky-600 mb-2">สำหรับนักเรียน</h2>
-        <p class="text-slate-500">เข้าสู่ระบบด้วยรหัสนักเรียน ดูงานและฮีโร่ของคุณ</p>
-      </div>
-      <div onclick="switchRole('teacher')" class="bg-white p-8 rounded-2xl border-4 border-pink-400 text-center cursor-pointer hover:scale-105 transition shadow-lg">
-        <div class="text-6xl mb-4">👩‍🏫</div>
-        <h2 class="text-2xl font-bold text-pink-600 mb-2">สำหรับคุณครู</h2>
-        <p class="text-slate-500">จัดการภาระงาน กรอกคะแนน และดาวน์โหลดไฟล์ Excel</p>
-      </div>
-    </div>
+    <!-- Main Content Area -->
+    <main class="max-w-6xl mx-auto p-4 md:p-6">
 
-    <!-- Student Section -->
-    <section id="studentSection" class="hidden">
-      <div id="studentLogin" class="max-w-md mx-auto bg-white p-6 rounded-2xl border-4 border-sky-400 shadow-lg my-10">
-        <h3 class="text-xl font-bold text-center mb-4 text-sky-600">🔐 เข้าสู่ระบบนักเรียน</h3>
-        <input type="text" id="inputStudentId" placeholder="กรอกรหัสนักเรียน (เช่น 40101)" class="w-full p-3 border-2 border-sky-300 rounded-lg text-center text-lg mb-4 focus:outline-none focus:border-sky-500">
-        <button onclick="loginStudent()" class="w-full bg-amber-400 hover:bg-amber-500 text-slate-800 font-bold py-3 text-lg rounded-xl shadow-md border-2 border-amber-600">เข้าสู่ระบบ 🚀</button>
-      </div>
-
-      <div id="studentView" class="hidden space-y-6">
-        <div id="heroBanner" class="bg-gradient-to-r from-amber-100 to-orange-100 p-6 rounded-2xl border-4 border-amber-400 shadow-md"></div>
-        <div class="bg-white p-6 rounded-2xl border-4 border-sky-400 shadow-md">
-          <h3 class="text-lg font-bold mb-4 text-sky-700"><i class="fa-solid fa-list-check mr-2"></i> รายการภาระงานของคุณ</h3>
-          <div id="studentTaskList" class="space-y-4"></div>
+      <!-- ==================== HOME TAB ==================== -->
+      <section id="tabHome" class="space-y-6">
+        <div class="text-center py-6">
+          <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-300 inline-block mb-2">
+            🎮 Gamified Learning & Task Tracker
+          </span>
+          <h2 class="text-3xl md:text-4xl font-extrabold text-sky-900">ยินดีต้อนรับสู่โลก <span class="text-sky-500">วิทยาการคำนวณ ป.4</span></h2>
+          <p class="text-slate-500 mt-2 text-sm md:text-base">ส่งงานตรงเวลา รับพลังงานสะสม นำฮีโร่ตัวโปรดเข้าสู่ลานประลอง Turn-Based Arena!</p>
         </div>
-      </div>
-    </section>
 
-    <!-- Teacher Section -->
-    <section id="teacherSection" class="hidden space-y-6">
-      <div class="bg-white p-4 rounded-2xl border-4 border-sky-400 shadow-md flex flex-wrap items-center justify-between gap-4">
-        <div class="flex items-center space-x-2">
-          <label class="font-bold">เลือกระดับชั้น:</label>
-          <select id="classSelect" onchange="renderTeacherTable()" class="p-2 border-2 border-sky-300 rounded-lg font-bold text-sky-700">
-            <option value="ป.4/1">ป.4/1</option>
-            <option value="ป.4/2">ป.4/2</option>
-            <option value="ป.4/3">ป.4/3</option>
-            <option value="ป.4/4">ป.4/4</option>
-          </select>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+          <!-- Student Portal Card -->
+          <div onclick="switchTab('student')" class="card-game p-8 text-center cursor-pointer hover:scale-[1.02] transition transform">
+            <div class="w-20 h-20 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl border-2 border-sky-300">
+              🎒
+            </div>
+            <h3 class="text-2xl font-bold text-sky-600 mb-2">สำหรับนักเรียน (Student Portal)</h3>
+            <p class="text-slate-500 text-sm mb-6">กรอกรหัสนักเรียน เลือกฮีโร่ประจำตัว เช็คสถานะการส่งงาน และสะสมพลังไปสู้กับเพื่อน!</p>
+            <button class="btn-game-yellow px-6 py-2.5 text-slate-800 font-bold w-full md:w-auto">เข้าสู่ระบบนักเรียน 🚀</button>
+          </div>
+
+          <!-- Teacher Dashboard Card -->
+          <div onclick="switchTab('teacher')" class="card-game-pink p-8 text-center cursor-pointer hover:scale-[1.02] transition transform">
+            <div class="w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl border-2 border-pink-300">
+              👩‍🏫
+            </div>
+            <h3 class="text-2xl font-bold text-pink-600 mb-2">สำหรับคุณครู (Teacher Dashboard)</h3>
+            <p class="text-slate-500 text-sm mb-6">จัดการภาระงาน แนบไฟล์/ลิงก์ กรอกคะแนนทีละคน/ทั้งห้อง พร้อมระบบคำนวณถ่วงน้ำหนักคะแนน</p>
+            <button class="bg-pink-500 hover:bg-pink-600 text-white border-2 border-pink-700 shadow-[0px_4px_0px_#BE185D] font-bold px-6 py-2.5 rounded-xl w-full md:w-auto">เปิดแดชบอร์ดคุณครู 🔑</button>
+          </div>
         </div>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl shadow border-2 border-emerald-800">📊 ดาวน์โหลดคะแนน (.xlsx)</button>
-          <button onclick="saveAllScores()" class="bg-sky-500 hover:bg-sky-600 text-white font-bold px-5 py-2 rounded-xl shadow border-2 border-sky-700">💾 บันทึกคะแนนทั้งหมด</button>
+      </section>
+
+      <!-- ==================== TEACHER TAB ==================== -->
+      <section id="tabTeacher" class="hidden space-y-6">
+        <!-- Control Bar -->
+        <div class="card-game-pink p-4 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center space-x-3">
+            <label class="font-bold text-slate-700">เลือกระดับชั้น:</label>
+            <select id="classSelect" onchange="renderTeacherTable()" class="p-2 border-2 border-pink-300 rounded-lg font-bold text-pink-600 focus:outline-none">
+              <option value="ป.4/1">ป.4/1</option>
+              <option value="ป.4/2">ป.4/2</option>
+              <option value="ป.4/3">ป.4/3</option>
+              <option value="ป.4/4">ป.4/4</option>
+            </select>
+          </div>
+
+          <!-- Mode Switcher: Checkmark vs Score -->
+          <div class="flex items-center bg-pink-50 p-1 rounded-xl border border-pink-200">
+            <button id="btnModeCheck" onclick="toggleGradeMode('check')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-pink-500 text-white shadow">
+              <i class="fa-solid fa-circle-check mr-1"></i> โหมดติ๊กถูก ✓
+            </button>
+            <button id="btnModeScore" onclick="toggleGradeMode('score')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-pink-700 hover:bg-pink-100">
+              <i class="fa-solid fa-hashtag mr-1"></i> โหมดคะแนน 🔢
+            </button>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button onclick="openNewAssignmentModal()" class="btn-game-yellow px-4 py-2 text-sm">➕ เพิ่มภาระงานใหม่</button>
+            <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm border-2 border-emerald-800 shadow">📊 ดาวน์โหลดคะแนน (.xlsx)</button>
+            <button onclick="saveAllScores()" class="bg-sky-500 hover:bg-sky-600 text-white font-bold px-4 py-2 rounded-xl text-sm border-2 border-sky-700 shadow">💾 บันทึกคะแนนทั้งหมด</button>
+          </div>
         </div>
-      </div>
 
-      <div class="bg-white p-6 rounded-2xl border-4 border-sky-400 shadow-md overflow-x-auto">
-        <table id="teacherTable" class="w-full text-left border-collapse">
-          <thead>
-            <tr id="tableHeader" class="bg-sky-100 text-sky-800 border-b-2 border-sky-300">
-              <th class="p-3">เลขที่</th>
-              <th class="p-3">เลขประจำตัว</th>
-              <th class="p-3">ชื่อ-นามสกุล</th>
-              <th class="p-3 text-center">ความก้าวหน้า</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+        <!-- Grading Table Container -->
+        <div class="card-game p-6 overflow-x-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-slate-700">ตารางกรอกคะแนนและสถานะการส่งงาน</h3>
+            <span class="text-xs text-slate-400">* กรอบคะแนนรวมคำนวณถ่วงน้ำหนักให้อัตโนมัติ</span>
+          </div>
 
+          <!-- Skeleton Loading -->
+          <div id="teacherTableSkeleton" class="space-y-3">
+            <div class="skeleton h-10 w-full rounded"></div>
+            <div class="skeleton h-8 w-full rounded"></div>
+            <div class="skeleton h-8 w-full rounded"></div>
+            <div class="skeleton h-8 w-full rounded"></div>
+          </div>
+
+          <!-- Table Content -->
+          <table id="teacherTable" class="w-full hidden text-left border-collapse min-w-[600px]">
+            <thead>
+              <tr id="tableHeader" class="bg-sky-100 text-sky-800 border-b-2 border-sky-300">
+                <th class="p-3">เลขที่</th>
+                <th class="p-3">เลขประจำตัว</th>
+                <th class="p-3">ชื่อ-นามสกุล</th>
+                <th class="p-3 text-center">ความก้าวหน้า</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ==================== STUDENT TAB ==================== -->
+      <section id="tabStudent" class="hidden space-y-6">
+        <!-- Student Login -->
+        <div id="studentLogin" class="max-w-md mx-auto card-game p-6 my-10">
+          <h3 class="text-xl font-bold text-center mb-4 text-sky-600">🔐 เข้าสู่ระบบนักเรียน</h3>
+          <p class="text-xs text-slate-400 text-center mb-4">กรอกรหัสนักเรียน 5 หลัก (เช่น 40101, 40102)</p>
+          <input type="text" id="inputStudentId" placeholder="กรอกรหัสนักเรียนที่นี่" class="w-full p-3 border-2 border-sky-300 rounded-xl text-center text-lg mb-4 font-bold focus:outline-none focus:border-sky-500">
+          <button onclick="loginStudent()" class="w-full btn-game-yellow py-3 text-lg">เข้าสู่ระบบ 🚀</button>
+        </div>
+
+        <!-- Student Dashboard -->
+        <div id="studentView" class="hidden space-y-6">
+          <div id="heroBanner" class="card-game p-6 bg-gradient-to-r from-amber-100 to-orange-100 border-amber-400"></div>
+          <div class="card-game p-6">
+            <h3 class="text-lg font-bold mb-4 text-sky-700 flex items-center">
+              <i class="fa-solid fa-list-check mr-2"></i> รายการภาระงานของคุณ
+            </h3>
+            <div id="studentTaskList" class="space-y-4"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== ARENA TAB ==================== -->
+      <section id="tabArena" class="hidden space-y-6">
+        <div class="card-game p-6 text-center bg-gradient-to-b from-sky-50 to-indigo-50 border-indigo-300">
+          <h2 class="text-2xl font-extrabold text-indigo-900 mb-2">⚔️ ลานประลองฮีโร่ Turn-Based Arena</h2>
+          <p class="text-xs text-slate-500 mb-6">ใช้พลังงานสะสม ⚡ ที่ได้จากการส่งงาน มาเปิดฉากดวลกับเพื่อนในห้องเรียน!</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto text-left">
+            <div>
+              <label class="block font-bold text-sm text-slate-700 mb-1">เลือกฮีโร่ผู้ท้าชิง (ฝั่งที่ 1):</label>
+              <select id="arenaP1" class="w-full p-2.5 border-2 border-indigo-300 rounded-xl font-bold text-indigo-700 bg-white">
+                <option value="">-- เลือกรหัสนักเรียน --</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-sm text-slate-700 mb-1">เลือกคู่ต่อสู้ (ฝั่งที่ 2):</label>
+              <select id="arenaP2" class="w-full p-2.5 border-2 border-rose-300 rounded-xl font-bold text-rose-700 bg-white">
+                <option value="">-- เลือกรหัสนักเรียน --</option>
+              </select>
+            </div>
+          </div>
+
+          <button onclick="startBattle()" class="btn-game-yellow px-8 py-3 text-lg mt-6">เริ่มการต่อสู้เลย! 💥</button>
+        </div>
+
+        <!-- Battle Field Container -->
+        <div id="battleArena" class="hidden card-game p-6 bg-slate-900 border-slate-700 text-white">
+          <div class="grid grid-cols-2 gap-4 mb-6 text-center">
+            <!-- Player 1 -->
+            <div class="p-4 bg-slate-800 rounded-xl border border-sky-500">
+              <div id="p1HeroIcon" class="text-5xl mb-2">⚔️</div>
+              <h4 id="p1Name" class="font-bold text-sky-400">ผู้เล่น 1</h4>
+              <div class="w-full bg-slate-700 rounded-full h-4 mt-2 overflow-hidden border border-slate-600">
+                <div id="p1HpBar" class="bg-emerald-500 h-4 w-full transition-all duration-300"></div>
+              </div>
+              <span id="p1HpText" class="text-xs text-slate-300">100 / 100 HP</span>
+            </div>
+
+            <!-- Player 2 -->
+            <div class="p-4 bg-slate-800 rounded-xl border border-rose-500">
+              <div id="p2HeroIcon" class="text-5xl mb-2">🛡️</div>
+              <h4 id="p2Name" class="font-bold text-rose-400">ผู้เล่น 2</h4>
+              <div class="w-full bg-slate-700 rounded-full h-4 mt-2 overflow-hidden border border-slate-600">
+                <div id="p2HpBar" class="bg-emerald-500 h-4 w-full transition-all duration-300"></div>
+              </div>
+              <span id="p2HpText" class="text-xs text-slate-300">100 / 100 HP</span>
+            </div>
+          </div>
+
+          <!-- Battle Log Box -->
+          <div id="battleLog" class="bg-slate-950 p-4 rounded-xl h-40 overflow-y-auto font-mono text-xs text-amber-300 border border-slate-800 space-y-1">
+            <p>--- เริ่มต้นการต่อสู้ ---</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-slate-800 text-slate-300 p-4 text-center text-xs border-t-4 border-slate-900 mt-10">
+    <p>© 2026 ระบบติดตามงานวิชาวิทยาการคำนวณ ป.4 | โรงเรียนอนุบาลวัดนางนอง</p>
+    <p class="text-slate-500 mt-1">พัฒนาโดย นางสาวอารดา รัตนนภาลัย (ครูฝนฝน)</p>
+  </footer>
+
+  <!-- JavaScript Functionality -->
   <script>
-    // ⚠️ วาง URL Web App จาก Google Apps Script ตรงนี้ครับ
+    // ⚠️ วาง URL Web App จาก Google Apps Script ของคุณครูตรงนี้ครับ
     const GAS_WEB_APP_URL = "https://script.google.com/a/macros/awnn.ac.th/s/AKfycbwS7zxpDJPnJLGPBcyuoCUDypYL0MMLS6oK_p-canbjVzKKK5ORIlhEcuYnZ0ERwoex_Q/exec";
 
     let globalData = { students: [], assignments: [], scores: [], targetScore: 20 };
     let currentStudent = null;
     let pendingScoreUpdates = {};
+    let currentGradeMode = 'check'; // 'check' หรือ 'score'
 
-    window.onload = function() { fetchData(); };
+    // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
+    window.onload = function() {
+      fetchData();
+    };
 
+    // ฟังก์ชันเชื่อมต่อกับ Google Apps Script ผ่าน Fetch API
     async function callGAS(action, payload = {}) {
       try {
-        const res = await fetch(GAS_WEB_APP_URL, {
+        const response = await fetch(GAS_WEB_APP_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: action, ...payload })
         });
-        return await res.json();
+        return await response.json();
       } catch (err) {
-        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+        console.error("Fetch Error:", err);
+        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาตรวจสอบ URL หรือการเชื่อมต่ออินเทอร์เน็ต', 'error');
       }
     }
 
     async function fetchData() {
-      Swal.fire({ title: 'กำลังดึงข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-      globalData = await callGAS('getInitialData');
-      Swal.close();
-      if (currentStudent) renderStudentDashboard();
-      renderTeacherTable();
+      showLoading(true);
+      const data = await callGAS('getInitialData');
+      if (data) {
+        globalData = data;
+        showLoading(false);
+        if (currentStudent) renderStudentDashboard();
+        renderTeacherTable();
+        populateArenaSelects();
+      }
     }
 
-    function switchRole(role) {
-      document.getElementById('roleSelector').classList.add('hidden');
-      if (role === 'student') {
-        document.getElementById('studentSection').classList.remove('hidden');
+    function showLoading(isLoading) {
+      const skeleton = document.getElementById('teacherTableSkeleton');
+      const table = document.getElementById('teacherTable');
+      if (isLoading) {
+        skeleton?.classList.remove('hidden');
+        table?.classList.add('hidden');
       } else {
+        skeleton?.classList.add('hidden');
+        table?.classList.remove('hidden');
+      }
+    }
+
+    // สลับแท็บหน้า
+    function switchTab(tabName) {
+      ['tabHome', 'tabTeacher', 'tabStudent', 'tabArena'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+
+      if (tabName === 'teacher') {
         Swal.fire({
           title: 'ยืนยันตัวตนคุณครู',
           input: 'text',
           inputPlaceholder: 'กรอกชื่อผู้ใช้',
           showCancelButton: true,
-          confirmButtonText: 'เข้าสู่ระบบ'
+          confirmButtonText: 'เข้าสู่ระบบ',
+          cancelButtonText: 'ยกเลิก'
         }).then((result) => {
           if (result.value === '@dmin') {
-            document.getElementById('teacherSection').classList.remove('hidden');
+            document.getElementById('tabTeacher').classList.remove('hidden');
             renderTeacherTable();
           } else if (result.isConfirmed) {
-            Swal.fire('ชื่อผู้ใช้ไม่ถูกต้อง', '', 'error').then(() => switchRole('teacher'));
+            Swal.fire('ชื่อผู้ใช้ไม่ถูกต้อง', '', 'error').then(() => switchTab('home'));
           } else {
-            document.getElementById('roleSelector').classList.remove('hidden');
+            document.getElementById('tabHome').classList.remove('hidden');
           }
         });
+      } else {
+        document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.remove('hidden');
       }
     }
 
+    // ------------------- ฝั่งคุณครู -------------------
+    function toggleGradeMode(mode) {
+      currentGradeMode = mode;
+      const btnCheck = document.getElementById('btnModeCheck');
+      const btnScore = document.getElementById('btnModeScore');
+      if (mode === 'check') {
+        btnCheck.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-pink-500 text-white shadow";
+        btnScore.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-pink-700 hover:bg-pink-100";
+      } else {
+        btnScore.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-pink-500 text-white shadow";
+        btnCheck.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-pink-700 hover:bg-pink-100";
+      }
+      renderTeacherTable();
+    }
+
+    function renderTeacherTable() {
+      const selectedClass = document.getElementById('classSelect').value;
+      const classStudents = globalData.students.filter(s => s.Class === selectedClass);
+      const headerRow = document.getElementById('tableHeader');
+      const tableBody = document.getElementById('tableBody');
+
+      headerRow.innerHTML = `
+        <th class="p-3 border-b">เลขที่</th>
+        <th class="p-3 border-b">เลขประจำตัว</th>
+        <th class="p-3 border-b">ชื่อ-นามสกุล</th>
+        <th class="p-3 border-b text-center">ความก้าวหน้า</th>
+      `;
+
+      globalData.assignments.forEach(assign => {
+        headerRow.innerHTML += `
+          <th class="p-3 border-b text-center">
+            <div class="font-bold">${assign.Title}</div>
+            <div class="text-xs text-slate-400">(เต็ม ${assign.MaxScore})</div>
+          </th>`;
+      });
+
+      tableBody.innerHTML = '';
+
+      classStudents.forEach(stu => {
+        let submittedCount = 0;
+        let scoreInputsHtml = '';
+
+        globalData.assignments.forEach(assign => {
+          const scoreRec = globalData.scores.find(s => s.StudentID == stu.StudentID && s.AssignmentID == assign.AssignmentID);
+          const val = scoreRec ? scoreRec.Score : '';
+          const isSubmitted = val !== '';
+          if (isSubmitted) submittedCount++;
+
+          if (currentGradeMode === 'check') {
+            scoreInputsHtml += `
+              <td class="p-2 border-b text-center">
+                <button onclick="toggleCheckStatus('${stu.StudentID}', '${assign.AssignmentID}', ${assign.MaxScore}, ${isSubmitted})" 
+                        class="w-9 h-9 rounded-xl font-bold transition transform active:scale-95 ${isSubmitted ? 'bg-emerald-500 text-white shadow' : 'bg-slate-100 text-slate-300 border border-slate-200'}">
+                  ${isSubmitted ? '✓' : ''}
+                </button>
+              </td>`;
+          } else {
+            scoreInputsHtml += `
+              <td class="p-2 border-b text-center">
+                <input type="number" value="${val}" max="${assign.MaxScore}"
+                       onchange="onScoreChange('${stu.StudentID}', '${assign.AssignmentID}', this.value)"
+                       class="w-16 p-1 text-center border-2 border-slate-200 rounded font-bold focus:border-pink-500">
+              </td>`;
+          }
+        });
+
+        const totalAssign = globalData.assignments.length || 1;
+        const pct = Math.round((submittedCount / totalAssign) * 100);
+        const progressColor = pct === 100 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-400' : 'bg-rose-400';
+
+        tableBody.innerHTML += `
+          <tr class="hover:bg-sky-50 border-b">
+            <td class="p-3 font-bold text-slate-600">${stu.Number || '-'}</td>
+            <td class="p-3 font-mono text-sm">${stu.StudentID}</td>
+            <td class="p-3 font-bold">${stu.Name}</td>
+            <td class="p-3 text-center">
+              <div class="w-28 mx-auto bg-slate-200 rounded-full h-3 overflow-hidden mb-1">
+                <div class="${progressColor} h-3 transition-all duration-300" style="width: ${pct}%"></div>
+              </div>
+              <span class="text-xs text-slate-500 font-bold">${submittedCount}/${totalAssign} งาน (${pct}%)</span>
+            </td>
+            ${scoreInputsHtml}
+          </tr>`;
+      });
+    }
+
+    function toggleCheckStatus(studentId, assignmentId, maxScore, isSubmitted) {
+      const newScore = isSubmitted ? "" : maxScore;
+      onScoreChange(studentId, assignmentId, newScore);
+      // Optimistic Local Update
+      let rec = globalData.scores.find(s => s.StudentID == studentId && s.AssignmentID == assignmentId);
+      if (rec) {
+        rec.Score = newScore;
+        rec.Status = newScore !== "" ? "ส่งแล้ว" : "ยังไม่ส่ง";
+      } else {
+        globalData.scores.push({ StudentID: studentId, AssignmentID: assignmentId, Score: newScore, Status: "ส่งแล้ว" });
+      }
+      renderTeacherTable();
+    }
+
+    function onScoreChange(studentId, assignmentId, newScore) {
+      pendingScoreUpdates[`${studentId}_${assignmentId}`] = {
+        studentId: studentId,
+        assignmentId: assignmentId,
+        score: newScore
+      };
+    }
+
+    async function saveAllScores() {
+      const updates = Object.values(pendingScoreUpdates);
+      if (updates.length === 0) {
+        Swal.fire('ไม่มีการเปลี่ยนแปลง', 'ยังไม่มีการแก้ไขคะแนนใหม่', 'info');
+        return;
+      }
+
+      Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      const data = await callGAS('saveBatchScores', { data: updates });
+      if (data) {
+        globalData = data;
+        pendingScoreUpdates = {};
+        renderTeacherTable();
+        Swal.fire('บันทึกสำเร็จ!', 'อัปเดตคะแนนเรียบร้อยแล้ว', 'success');
+      }
+    }
+
+    function openNewAssignmentModal() {
+      Swal.fire({
+        title: '➕ เพิ่มภาระงานใหม่',
+        html: `
+          <input id="swalTitle" class="swal2-input" placeholder="ชื่อภาระงาน">
+          <input id="swalMaxScore" type="number" class="swal2-input" placeholder="คะแนนเต็ม (เช่น 10)">
+          <input id="swalFile" type="file" class="swal2-file" accept=".png,.pdf">
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'บันทึกงาน',
+        cancelButtonText: 'ยกเลิก',
+        preConfirm: () => {
+          const title = document.getElementById('swalTitle').value;
+          const maxScore = document.getElementById('swalMaxScore').value;
+          const fileInput = document.getElementById('swalFile').files[0];
+
+          if (!title || !maxScore) {
+            Swal.showValidationMessage('กรุณากรอกชื่อและคะแนนเต็ม');
+            return false;
+          }
+
+          return new Promise((resolve) => {
+            if (fileInput) {
+              const reader = new FileReader();
+              reader.onload = function(e) {
+                const bytes = e.target.result.split(',')[1];
+                resolve({ title, maxScore, fileData: { name: fileInput.name, mimeType: fileInput.type, bytes: bytes } });
+              };
+              reader.readAsDataURL(fileInput);
+            } else {
+              resolve({ title, maxScore, fileData: null });
+            }
+          });
+        }
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          Swal.fire({ title: 'กำลังอัปโหลดภาระงาน...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+          const data = await callGAS('createAssignment', result.value);
+          if (data) {
+            globalData = data;
+            renderTeacherTable();
+            Swal.fire('สำเร็จ!', 'เพิ่มภาระงานเรียบร้อยแล้ว', 'success');
+          }
+        }
+      });
+    }
+
+    function exportToExcel() {
+      const selectedClass = document.getElementById('classSelect').value;
+      const classStudents = globalData.students.filter(s => s.Class === selectedClass);
+      
+      const dataToExport = classStudents.map(stu => {
+        let row = {
+          'เลขที่': stu.Number,
+          'เลขประจำตัว': stu.StudentID,
+          'ชื่อ-นามสกุล': stu.Name
+        };
+
+        globalData.assignments.forEach(assign => {
+          const scoreRec = globalData.scores.find(s => s.StudentID == stu.StudentID && s.AssignmentID == assign.AssignmentID);
+          row[assign.Title] = scoreRec ? scoreRec.Score : '-';
+        });
+
+        return row;
+      });
+
+      const ws = XLSX.utils.json_to_sheet(dataToExport);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "คะแนน");
+      XLSX.writeFile(wb, `คะแนน_วิทยาการคำนวณ_${selectedClass}.xlsx`);
+    }
+
+    // ------------------- ฝั่งนักเรียน -------------------
     function loginStudent() {
       const id = document.getElementById('inputStudentId').value.trim();
       const student = globalData.students.find(s => s.StudentID == id);
+
       if (!student) {
         Swal.fire('ไม่พบข้อมูล', 'กรุณาตรวจสอบรหัสนักเรียนอีกครั้ง', 'error');
         return;
       }
+
       currentStudent = student;
       document.getElementById('studentLogin').classList.add('hidden');
       document.getElementById('studentView').classList.remove('hidden');
@@ -166,41 +567,46 @@
       if (!currentStudent.HeroType) {
         heroBanner.innerHTML = `
           <div class="text-center py-4">
-            <h3 class="text-xl font-bold text-amber-800">✨ เลือกฮีโร่ประจำตัวของคุณ</h3>
+            <h3 class="text-xl font-bold text-amber-800">✨ ต้อนรับผู้กล้า! เลือกฮีโร่ประจำตัวของคุณ</h3>
             <div class="flex justify-center space-x-4 my-4">
-              <button onclick="chooseHero('⚔️ อัศวิน')" class="bg-white p-3 rounded-xl border-2 border-amber-400 font-bold">⚔️ อัศวิน</button>
-              <button onclick="chooseHero('🧙‍♂️ พ่อมด')" class="bg-white p-3 rounded-xl border-2 border-amber-400 font-bold">🧙‍♂️ พ่อมด</button>
-              <button onclick="chooseHero('🦊 จิ้งจอก')" class="bg-white p-3 rounded-xl border-2 border-amber-400 font-bold">🦊 จิ้งจอก</button>
+              <button onclick="chooseHero('⚔️ อัศวิน')" class="bg-white p-3 rounded-xl border-2 border-amber-400 font-bold hover:scale-105 transition">⚔️ อัศวิน</button>
+              <button onclick="chooseHero('🧙‍♂️ พ่อมด')" class="bg-white p-3 rounded-xl border-2 border-amber-400 font-bold hover:scale-105 transition">🧙‍♂️ พ่อมด</button>
+              <button onclick="chooseHero('🦊 จิ้งจอก')" class="bg-white p-3 rounded-xl border-2 border-amber-400 font-bold hover:scale-105 transition">🦊 จิ้งจอก</button>
             </div>
           </div>`;
       } else {
         heroBanner.innerHTML = `
           <div class="flex justify-between items-center">
             <div>
-              <span class="text-xs bg-amber-200 text-amber-800 px-2 py-1 rounded-full font-bold">${currentStudent.Class} เลขที่ ${currentStudent.Number}</span>
+              <span class="text-xs bg-amber-200 text-amber-800 px-2.5 py-1 rounded-full font-bold">${currentStudent.Class} เลขที่ ${currentStudent.Number}</span>
               <h2 class="text-2xl font-bold text-amber-900 mt-1">${currentStudent.Name}</h2>
-              <p class="text-amber-700 text-sm">ฮีโร่: <b>${currentStudent.HeroType}</b></p>
+              <p class="text-amber-700 text-sm">ฮีโร่ประจำตัว: <b>${currentStudent.HeroType}</b></p>
             </div>
             <div class="text-right">
               <div class="text-3xl font-bold text-orange-600">⚡ ${currentStudent.EnergyPoints || 0}</div>
-              <div class="text-xs text-amber-700">พลังสะสม</div>
+              <div class="text-xs text-amber-700 font-bold">พลังสะสม</div>
             </div>
           </div>`;
       }
 
       const taskList = document.getElementById('studentTaskList');
       taskList.innerHTML = '';
+
       globalData.assignments.forEach(assign => {
         const scoreRec = globalData.scores.find(s => s.StudentID == currentStudent.StudentID && s.AssignmentID == assign.AssignmentID);
         const isSubmitted = scoreRec && scoreRec.Status === 'ส่งแล้ว';
+
         taskList.innerHTML += `
           <div class="flex justify-between items-center p-4 bg-slate-50 border rounded-xl">
             <div>
               <h4 class="font-bold text-slate-800">${assign.Title}</h4>
-              ${assign.FileUrl ? `<a href="${assign.FileUrl}" target="_blank" class="text-xs text-sky-600 underline font-bold">📎 แนบไฟล์งาน/ลิงก์</a>` : ''}
+              ${assign.FileUrl ? `<a href="${assign.FileUrl}" target="_blank" class="text-xs text-sky-600 underline font-bold mt-1 inline-block">📎 ดาวน์โหลด/ดูไฟล์แนบ</a>` : ''}
             </div>
             <div>
-              ${isSubmitted ? `<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">ส่งแล้ว ✅</span>` : `<span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-bold">ยังไม่ส่ง ❌</span>`}
+              ${isSubmitted 
+                ? `<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">ส่งแล้ว ✅</span>`
+                : `<span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-bold">ยังไม่ส่ง ❌</span>`
+              }
             </div>
           </div>`;
       });
@@ -208,79 +614,78 @@
 
     async function chooseHero(heroType) {
       Swal.fire({ title: 'กำลังเลือกฮีโร่...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-      globalData = await callGAS('selectHero', { studentId: currentStudent.StudentID, heroType: heroType });
-      currentStudent = globalData.students.find(s => s.StudentID == currentStudent.StudentID);
-      Swal.close();
-      renderStudentDashboard();
+      const data = await callGAS('selectHero', { studentId: currentStudent.StudentID, heroType: heroType });
+      if (data) {
+        globalData = data;
+        currentStudent = globalData.students.find(s => s.StudentID == currentStudent.StudentID);
+        Swal.close();
+        renderStudentDashboard();
+      }
     }
 
-    function renderTeacherTable() {
-      const selectedClass = document.getElementById('classSelect').value;
-      const classStudents = globalData.students.filter(s => s.Class === selectedClass);
-      const headerRow = document.getElementById('tableHeader');
-      const tableBody = document.getElementById('tableBody');
+    // ------------------- ARENA BATTLE SYSTEM -------------------
+    function populateArenaSelects() {
+      const p1 = document.getElementById('arenaP1');
+      const p2 = document.getElementById('arenaP2');
+      p1.innerHTML = '<option value="">-- เลือกรหัสนักเรียน --</option>';
+      p2.innerHTML = '<option value="">-- เลือกรหัสนักเรียน --</option>';
 
-      headerRow.innerHTML = `<th class="p-3 border-b">เลขที่</th><th class="p-3 border-b">เลขประจำตัว</th><th class="p-3 border-b">ชื่อ-นามสกุล</th><th class="p-3 border-b text-center">ความก้าวหน้า</th>`;
-      globalData.assignments.forEach(assign => {
-        headerRow.innerHTML += `<th class="p-3 border-b text-center"><div class="font-bold">${assign.Title}</div><div class="text-xs text-slate-400">(เต็ม ${assign.MaxScore})</div></th>`;
-      });
-
-      tableBody.innerHTML = '';
-      classStudents.forEach(stu => {
-        let submittedCount = 0;
-        let scoreInputsHtml = '';
-        globalData.assignments.forEach(assign => {
-          const scoreRec = globalData.scores.find(s => s.StudentID == stu.StudentID && s.AssignmentID == assign.AssignmentID);
-          const val = scoreRec ? scoreRec.Score : '';
-          if (val !== '') submittedCount++;
-          scoreInputsHtml += `
-            <td class="p-2 border-b text-center">
-              <input type="number" value="${val}" onchange="onScoreChange('${stu.StudentID}', '${assign.AssignmentID}', this.value)" class="w-16 p-1 text-center border-2 border-slate-200 rounded font-bold">
-            </td>`;
-        });
-
-        const totalAssign = globalData.assignments.length || 1;
-        const pct = Math.round((submittedCount / totalAssign) * 100);
-        tableBody.innerHTML += `
-          <tr class="hover:bg-sky-50 border-b">
-            <td class="p-3 font-bold">${stu.Number || '-'}</td>
-            <td class="p-3 font-mono text-sm">${stu.StudentID}</td>
-            <td class="p-3 font-bold">${stu.Name}</td>
-            <td class="p-3 text-center"><span class="text-xs font-bold text-sky-700">${submittedCount}/${totalAssign} งาน (${pct}%)</span></td>
-            ${scoreInputsHtml}
-          </tr>`;
+      globalData.students.forEach(stu => {
+        const option = `<option value="${stu.StudentID}">เลขที่ ${stu.Number} - ${stu.Name} (⚡${stu.EnergyPoints || 0})</option>`;
+        p1.innerHTML += option;
+        p2.innerHTML += option;
       });
     }
 
-    function onScoreChange(studentId, assignmentId, newScore) {
-      pendingScoreUpdates[`${studentId}_${assignmentId}`] = { studentId: studentId, assignmentId: assignmentId, score: newScore };
-    }
+    function startBattle() {
+      const id1 = document.getElementById('arenaP1').value;
+      const id2 = document.getElementById('arenaP2').value;
 
-    async function saveAllScores() {
-      const updates = Object.values(pendingScoreUpdates);
-      if (updates.length === 0) { Swal.fire('ไม่มีการเปลี่ยนแปลง', '', 'info'); return; }
-      Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-      globalData = await callGAS('saveBatchScores', { data: updates });
-      pendingScoreUpdates = {};
-      renderTeacherTable();
-      Swal.fire('บันทึกสำเร็จ!', '', 'success');
-    }
+      if (!id1 || !id2 || id1 === id2) {
+        Swal.fire('กรุณาเลือกคู่ต่อสู้', 'ต้องเลือกนักเรียน 2 คนที่ไม่ซ้ำกัน', 'warning');
+        return;
+      }
 
-    function exportToExcel() {
-      const selectedClass = document.getElementById('classSelect').value;
-      const classStudents = globalData.students.filter(s => s.Class === selectedClass);
-      const dataToExport = classStudents.map(stu => {
-        let row = { 'เลขที่': stu.Number, 'เลขประจำตัว': stu.StudentID, 'ชื่อ-นามสกุล': stu.Name };
-        globalData.assignments.forEach(assign => {
-          const scoreRec = globalData.scores.find(s => s.StudentID == stu.StudentID && s.AssignmentID == assign.AssignmentID);
-          row[assign.Title] = scoreRec ? scoreRec.Score : '-';
-        });
-        return row;
-      });
-      const ws = XLSX.utils.json_to_sheet(dataToExport);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "คะแนน");
-      XLSX.writeFile(wb, `คะแนน_${selectedClass}.xlsx`);
+      const p1 = globalData.students.find(s => s.StudentID == id1);
+      const p2 = globalData.students.find(s => s.StudentID == id2);
+
+      document.getElementById('p1Name').innerText = p1.Name;
+      document.getElementById('p2Name').innerText = p2.Name;
+      document.getElementById('p1HeroIcon').innerText = p1.HeroType ? p1.HeroType.split(' ')[0] : '⚔️';
+      document.getElementById('p2HeroIcon').innerText = p2.HeroType ? p2.HeroType.split(' ')[0] : '🛡️';
+
+      document.getElementById('battleArena').classList.remove('hidden');
+
+      // Simple Auto Turn-Based Simulation
+      let hp1 = 100, hp2 = 100;
+      const log = document.getElementById('battleLog');
+      log.innerHTML = `<p class="text-amber-400">⚡ การต่อสู้เริ่มต้นระหว่าง ${p1.Name} vs ${p2.Name}!</p>`;
+
+      let interval = setInterval(() => {
+        if (hp1 <= 0 || hp2 <= 0) {
+          clearInterval(interval);
+          const winner = hp1 > 0 ? p1.Name : p2.Name;
+          log.innerHTML += `<p class="text-emerald-400 font-bold">🏆 ผู้ชนะคือ ${winner}!</p>`;
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+          return;
+        }
+
+        // Random Attack
+        if (Math.random() > 0.5) {
+          let dmg = Math.floor(Math.random() * 20) + 10;
+          hp2 = Math.max(0, hp2 - dmg);
+          document.getElementById('p2HpBar').style.width = hp2 + '%';
+          document.getElementById('p2HpText').innerText = hp2 + ' / 100 HP';
+          log.innerHTML += `<p>${p1.Name} โจมตีใส่ ${p2.Name} สร้างความเสียหาย ${dmg} DMG!</p>`;
+        } else {
+          let dmg = Math.floor(Math.random() * 20) + 10;
+          hp1 = Math.max(0, hp1 - dmg);
+          document.getElementById('p1HpBar').style.width = hp1 + '%';
+          document.getElementById('p1HpText').innerText = hp1 + ' / 100 HP';
+          log.innerHTML += `<p>${p2.Name} โจมตีใส่ ${p1.Name} สร้างความเสียหาย ${dmg} DMG!</p>`;
+        }
+        log.scrollTop = log.scrollHeight;
+      }, 1000);
     }
   </script>
 </body>
